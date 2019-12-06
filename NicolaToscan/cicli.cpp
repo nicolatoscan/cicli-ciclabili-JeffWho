@@ -14,11 +14,14 @@ void findArticulationsWrapper(vector<int> *g);
 void criccaFinder(vector<int> *g, vector<int> *cricca, vector<int> *criccaToBackbone);
 void backBoneGraph(vector<int> *g, vector<int> *backbone);
 void DJ(vector<int> *g, int start, int **distanceTo, bool log);
+void printSolution(int **dist);
+void floydWarshall(vector<int> *g, int **dist, bool print);
 
 bool isBackBone[10000];
 int nBacknbone = 0;
 int fromBackboneToN[10000];
 int fromNToBackbone[10000];
+int witchCricca[10000];
 
 int N, M, NREQ;
 int nCricche = 0;
@@ -51,7 +54,7 @@ int main()
     criccaFinder(g, cricca, criccaToBackbone);
     backBoneGraph(g, backbone);
 
-    if (true)
+    if (false)
     {
         cout << "BACKBONE" << endl;
         for (int i = 0; i < N; i++)
@@ -59,6 +62,11 @@ int main()
                 cout << i << " ";
         cout << endl
              << endl;
+
+        cout << "WITCH CRICCA" << endl;
+        for (int i = 0; i < N; i++)
+            cout << witchCricca[i] << " ";
+        cout << endl;
 
         cout << "CRICCHE" << endl;
         for (int i = 0; i < nCricche; i++)
@@ -92,14 +100,72 @@ int main()
             distanceTo[i][j] = i == j ? 0 : MAX_LENGTH;
     }
 
-    for (int i = 0; i < nBacknbone; i++)
-        DJ(backbone, i, distanceTo, false);
+    //for (int i = 0; i < nBacknbone; i++)
+    //    DJ(backbone, i, distanceTo, false);
+    //for (int i = 0; i < nBacknbone; i++)
+    //{
+    //    for (int j = 0; j < nBacknbone; j++)
+    //        cout << distanceTo[i][j] << " ";
+    //    cout << endl;
+    //}
+    cout << "QUI" << endl;
+    floydWarshall(backbone, distanceTo, false);
+    cout << "QUI" << endl;
 
-    for (int i = 0; i < nBacknbone; i++)
+    ofstream out("output.txt");
+    for (int i = 0; i < NREQ; i++)
     {
-        for (int j = 0; j < nBacknbone; j++)
-            cout << distanceTo[i][j] << " ";
-        cout << endl;
+        int s;
+        int e;
+        in >> s;
+        in >> e;
+
+        int nCricca1, nCricca2;
+        vector<int> backStart, backEnd;
+        int bonus = 0;
+
+        if (isBackBone[s])
+        {
+            backStart.push_back(s);
+        }
+        else
+        {
+            nCricca1 = witchCricca[s];
+            for (int n : criccaToBackbone[nCricca1])
+                backStart.push_back(n);
+            bonus++;
+        }
+
+        if (isBackBone[e])
+        {
+            backEnd.push_back(e);
+        }
+        else
+        {
+            nCricca2 = witchCricca[e];
+            for (int n : criccaToBackbone[nCricca2])
+                backEnd.push_back(n);
+            bonus++;
+        }
+
+        int min = 10000;
+        for (int st : backStart)
+        {
+            for (int en : backEnd)
+            {
+                int ss = fromNToBackbone[st];
+                int ee = fromNToBackbone[en];
+                if (distanceTo[ss][ee] < min)
+                    min = distanceTo[ss][ee];
+            }
+        }
+
+        if (s == e)
+            out << 0 << endl;
+        else if (nCricca1 == nCricca2)
+            out << 1 << endl;
+        else
+            out << min + bonus << endl;
     }
 
     return 0;
@@ -164,7 +230,10 @@ void criccaFinder(vector<int> *g, vector<int> *cricca, vector<int> *criccaToBack
     int j = 0;
     int *visited = new int[N];
     for (int i = 0; i < N; i++)
+    {
+        witchCricca[i] = -1;
         visited[i] = isBackBone[i];
+    }
 
     nCricche = 0;
     for (int i = 0; i < N; i++)
@@ -172,12 +241,17 @@ void criccaFinder(vector<int> *g, vector<int> *cricca, vector<int> *criccaToBack
         if (!visited[i])
         {
             cricca[nCricche].push_back(i);
+            witchCricca[i] = nCricche;
             for (int near : g[i])
             {
                 if (isBackBone[near])
                     criccaToBackbone[nCricche].push_back(near);
                 else
+                {
                     cricca[nCricche].push_back(near);
+                    //cout << "Aggiungo " << near << " a cricca " << nCricche << endl;
+                    witchCricca[near] = nCricche;
+                }
                 visited[near] = true;
             }
             visited[i] = true;
@@ -269,4 +343,45 @@ void DJ(vector<int> *g, int start, int **distanceTo, bool log)
              << "-----------------------" << endl
              << endl;
     }
+}
+
+void floydWarshall(vector<int> *g, int **dist, bool print)
+{
+    for (int i = 0; i < nBacknbone; i++)
+        for (int n : g[i])
+            dist[i][n] = 1;
+
+    for (int k = 0; k < nBacknbone; k++)
+    {
+        for (int i = 0; i < nBacknbone; i++)
+        {
+            for (int j = 0; j < nBacknbone; j++)
+            {
+                if (dist[i][k] + dist[k][j] < dist[i][j])
+                    dist[i][j] = dist[i][k] + dist[k][j];
+            }
+        }
+    }
+    if (print)
+        printSolution(dist);
+}
+
+void printSolution(int **dist)
+{
+    cout << "The following matrix shows the shortest distances"
+            " between every pair of vertices \n";
+    for (int i = 0; i < nBacknbone; i++)
+    {
+        for (int j = 0; j < nBacknbone; j++)
+        {
+            if (dist[i][j] == 100000)
+                cout << "INF"
+                     << " ";
+            else
+                cout << dist[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << endl;
 }

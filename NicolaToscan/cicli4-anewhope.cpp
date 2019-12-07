@@ -142,13 +142,13 @@ int main()
         //for (int i = 0; i < NREQ; i++)
         //    out << i1[i] << "\n";
 
-        cout << i << endl;
         double res = double(end - start) / double(CLOCKS_PER_SEC);
+            cout << i << "\t" << fixed << res << setprecision(7) << endl;
         if (res < min)
         {
             min = res;
             minI = i;
-            cout << " -- " << i << "\t" << fixed << res << setprecision(7) << endl;
+            cout << " -- BEST --- " << i << "\t" << fixed << res << setprecision(7) << endl;
             out << i << "\t" << fixed << res << setprecision(7) << endl;
         }
     }

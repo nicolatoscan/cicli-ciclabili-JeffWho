@@ -100,6 +100,8 @@ int findDistance(vector<int> *g, int p1, int p2)
 
 int main()
 {
+    clock_t start, end;
+    double time_taken;
 
     ifstream in("input.txt");
     in >> N;
@@ -108,6 +110,7 @@ int main()
 
     vector<int> *g = new vector<int>[N];
 
+    start = clock();
     for (int i = 0; i < M; i++)
     {
         int s, e;
@@ -116,9 +119,15 @@ int main()
         g[s].push_back(e);
         g[e].push_back(s);
     }
+    end = clock();
+    cout << "Input grafo : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
+    start = clock();
     treeinator(g, 0);
+    end = clock();
+    cout << "Creazione albero : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
+    start = clock();
     ofstream out("output.txt");
     for (int i = 0; i < NREQ; i++)
     {
@@ -127,6 +136,8 @@ int main()
         in >> p2;
         out << findDistance(g, p1, p2) << endl;
     }
+    end = clock();
+    cout << "Calcolo distanze : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
     return 0;
 }

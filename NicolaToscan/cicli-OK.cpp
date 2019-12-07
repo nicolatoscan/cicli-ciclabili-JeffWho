@@ -1,11 +1,6 @@
 #include <fstream>
-#include <iostream>
-#include <utility>
 #include <vector>
-#include <utility>
 #include <queue>
-#include <stack>
-#include <iomanip>
 
 using namespace std;
 

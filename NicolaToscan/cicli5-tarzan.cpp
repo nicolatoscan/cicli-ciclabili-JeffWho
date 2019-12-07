@@ -90,8 +90,6 @@ int findDistance(vector<int> *g, int p1, int p2)
         }
     }
 
-    //cout << lastP1 << " " << lastP2 << endl;
-
     if (lastP1 < 0 && lastP2 < 0)
         return dist;
 
@@ -183,7 +181,6 @@ int main()
     vector<int> *tree = new vector<int>[N];
     subsets = new subset[N];
 
-    start = clock();
     for (int i = 0; i < M; i++)
     {
         int s, e;
@@ -192,15 +189,11 @@ int main()
         g[s].push_back(e);
         g[e].push_back(s);
     }
-    end = clock();
-    cout << "Input grafo : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
-    start = clock();
     treeinator(g, 0, tree);
-    end = clock();
-    cout << "Creazione albero : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
     start = clock();
+
     vector<pair<int, int>> *query = new vector<pair<int, int>>[N];
     int* responses = new int[NREQ];
     

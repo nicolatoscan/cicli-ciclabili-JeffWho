@@ -6,6 +6,8 @@
         "iostream": "cpp",
         "utility": "cpp",
         "xutility": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp"
     }
 }

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int N, M, NREQ;
+int N, M, Q;
 int *depth;
 int *parent;
 
@@ -84,7 +84,7 @@ int main()
     ifstream in("input.txt");
     in >> N;
     in >> M;
-    in >> NREQ;
+    in >> Q;
 
     vector<int> *g = new vector<int>[N];
     for (int i = 0; i < M; i++)
@@ -99,7 +99,7 @@ int main()
     treeinator(g, 0);
 
     ofstream out("output.txt");
-    for (int i = 0; i < NREQ; i++)
+    for (int i = 0; i < Q; i++)
     {
         int n1, n2;
         in >> n1;

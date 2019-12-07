@@ -7,20 +7,29 @@
 #include <stack>
 #include <iomanip>
 
+#define WHITE 1
+#define BLACK 2
+
 using namespace std;
 
-void treeinator(vector<int> *g, int root);
-int findDistance(vector<int> *g, int p1, int p2);
+void printGrafo(vector<int> *g, int len);
+
+
+struct subset
+{
+    int parent, rank, ancestor, color;
+};
 
 int N, M, NREQ;
 int nCricche = 0, nBacknbone = 0;
 int *depth;
 int *parent;
 bool *visited;
+struct subset* subsets;
 
 queue<int> q;
 
-void treeinator(vector<int> *g, int root)
+void treeinator(vector<int> *g, int root, vector<int>* tree)
 {
     visited = new bool[N];
     depth = new int[N];
@@ -50,6 +59,7 @@ void treeinator(vector<int> *g, int root)
                 visited[n] = true;
                 depth[n] = depth[node] + 1;
                 parent[n] = node;
+                tree[node].push_back(n);
                 q.push(n);
             }
         }
@@ -97,6 +107,68 @@ int findDistance(vector<int> *g, int p1, int p2)
     return dist;
 }
 
+
+void makeSet(int i)
+{
+    subsets[i].color = WHITE;
+    subsets[i].parent = i;
+    subsets[i].rank = 0;
+
+    return;
+}
+
+int findSet(int i)
+{
+    if (subsets[i].parent != i)
+        subsets[i].parent = findSet(subsets[i].parent);
+
+    return subsets[i].parent;
+}
+
+void unionSet(int x, int y)
+{
+    int xroot = findSet(x);
+    int yroot = findSet(y);
+
+    if (subsets[xroot].rank < subsets[yroot].rank)
+        subsets[xroot].parent = yroot;
+    else if (subsets[xroot].rank > subsets[yroot].rank)
+        subsets[yroot].parent = xroot;
+    else
+    {
+        subsets[yroot].parent = xroot;
+        (subsets[xroot].rank)++;
+    }
+}
+
+void tarzan(vector<int> *t, int n, vector<pair<int, int>> *query, int* resposes)
+{
+    makeSet(n);
+    subsets[n].ancestor = n;
+
+    for (int c : t[n])
+    {
+        tarzan(t, c, query, resposes);
+        unionSet(n, c);
+        subsets[findSet(n)].ancestor = n;
+    }
+
+    subsets[n].color = BLACK;
+
+    for (auto q : query[n]) {
+        resposes[q.second] = subsets[findSet(q.first)].ancestor;
+    }
+}
+
+void initTarzan() {
+    for (int i = 0; i < N; i++) {
+        subsets[i].color = WHITE;
+        subsets[i].parent = parent[i];
+        subsets[i].ancestor = i;
+        subsets[i].rank = 0;
+    }
+}
+
 int main()
 {
     clock_t start, end;
@@ -108,6 +180,8 @@ int main()
     in >> NREQ;
 
     vector<int> *g = new vector<int>[N];
+    vector<int> *tree = new vector<int>[N];
+    subsets = new subset[N];
 
     start = clock();
     for (int i = 0; i < M; i++)
@@ -122,21 +196,40 @@ int main()
     cout << "Input grafo : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
     start = clock();
-    treeinator(g, 0);
+    treeinator(g, 0, tree);
     end = clock();
     cout << "Creazione albero : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
 
     start = clock();
-    ofstream out("output.txt");
+    vector<pair<int, int>> *query = new vector<pair<int, int>>[N];
+    int* responses = new int[NREQ];
+    
     for (int i = 0; i < NREQ; i++)
     {
         int p1, p2;
         in >> p1;
         in >> p2;
-        out << findDistance(g, p1, p2) << endl;
+        query[p1].push_back(make_pair(p2, i));
     }
+    initTarzan();
+    tarzan(tree, 0, query, responses);
     end = clock();
-    cout << "Calcolo distanze : " << fixed << double(end - start) / double(CLOCKS_PER_SEC) << setprecision(5) << endl;
+    
+    ofstream out("output.txt");
+    for (int i = 0; i < NREQ; i++)
+        cout << responses[i] << endl;
 
     return 0;
+}
+
+void printGrafo(vector<int> *g, int len)
+{
+    for (int i = 0; i < len; i++)
+    {
+        cout << i << "\t=> ";
+        for (int n : g[i])
+            cout << n << " ";
+        cout << endl;
+    }
+    cout << endl;
 }
